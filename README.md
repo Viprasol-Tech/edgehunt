@@ -26,6 +26,13 @@ It is an **analytics layer, not an execution wrapper**. `edgehunt` never places 
 
 Run `edgehunt scan` and get a ranked, colour-coded board of every edge in the book (green = profitable). This is the real output, generated offline from the built-in feed:
 
+<p align="center">
+  <img src="docs/assets/demo.svg" width="820" alt="edgehunt scan — live ranked opportunity board (cross-venue arbitrage, mispricings, Kelly stakes)">
+</p>
+
+<details>
+<summary>Plain-text version</summary>
+
 ```text
                             edgehunt :: ranked opportunities  (bankroll $1,000)
 +----------------------------------------------------------------------------------------------------------+
@@ -44,6 +51,8 @@ Run `edgehunt scan` and get a ranked, colour-coded board of every edge in the bo
 +----------------------------------------------------------------------------------------------------------+
 Found 5 opportunities  (5 profitable)
 ```
+
+</details>
 
 > Row 1 is a **risk-free cross-venue lock-in**: buy YES at 41c on Kalshi and NO at 43c on Polymarket — exactly one leg pays $1, so you net ~13c per pair after fees. Row 2 is a **single-market YES+NO < $1** arb. Rows 3–5 are **fair-value mispricings** ranked by expected value.
 
