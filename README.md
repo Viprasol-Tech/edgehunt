@@ -86,35 +86,51 @@ from edgehunt.ev import implied_probability, expected_value, break_even_probabil
 from edgehunt.fees import KalshiFeeModel
 from edgehunt.models import Side
 
-implied_probability(60)                       # 0.60  -> the price IS the market's probability
+implied_probability(60)  # 0.60  -> the price IS the market's probability
 
 # You think YES is 60% likely; it's on offer at 50c on Kalshi.
-expected_value(0.60, 50, Side.YES, KalshiFeeModel())   # +0.08  ($0.08 edge per contract, after fees)
-break_even_probability(50, Side.YES, KalshiFeeModel()) # 0.52   (need >52% to make money here)
+expected_value(0.60, 50, Side.YES, KalshiFeeModel())  # +0.08  ($0.08 edge per contract, after fees)
+break_even_probability(50, Side.YES, KalshiFeeModel())  # 0.52   (need >52% to make money here)
 ```
 
 ```python
 from edgehunt.kelly import kelly_fraction, stake
 
 # 60% true probability on a 40c contract -> full Kelly is 1/3 of bankroll.
-kelly_fraction(0.60, 40)                       # 0.3333...
+kelly_fraction(0.60, 40)  # 0.3333...
 stake(bankroll=1000, win_probability=0.60, price_cents=40, fraction=0.5)  # $166.67 (half-Kelly)
 
 # No edge? Stake is exactly zero — edgehunt never tells you to bet a losing line.
-kelly_fraction(0.40, 50)                       # 0.0
+kelly_fraction(0.40, 50)  # 0.0
 ```
 
 ```python
 from edgehunt.arbitrage import cross_venue_arbitrage
 from edgehunt.models import Market
 
-k = Market(venue="kalshi", ticker="K", question="Incumbent wins?",
-           yes_bid=39, yes_ask=41, no_bid=58, no_ask=60, event_key="evt")
-p = Market(venue="polymarket", ticker="P", question="Incumbent wins?",
-           yes_bid=56, yes_ask=58, no_bid=41, no_ask=43, event_key="evt")
+k = Market(
+    venue="kalshi",
+    ticker="K",
+    question="Incumbent wins?",
+    yes_bid=39,
+    yes_ask=41,
+    no_bid=58,
+    no_ask=60,
+    event_key="evt",
+)
+p = Market(
+    venue="polymarket",
+    ticker="P",
+    question="Incumbent wins?",
+    yes_bid=56,
+    yes_ask=58,
+    no_bid=41,
+    no_ask=43,
+    event_key="evt",
+)
 
 opp = cross_venue_arbitrage(k, p)
-print(opp.description)        # Buy YES@41c on kalshi + NO@43c on polymarket locks $0.131/pair
+print(opp.description)  # Buy YES@41c on kalshi + NO@43c on polymarket locks $0.131/pair
 print(opp.profit_per_dollar)  # ~0.151  (15.1% on deployed capital, risk-free)
 ```
 
@@ -151,18 +167,25 @@ from edgehunt.models import Market
 from edgehunt.scanner import Scanner
 import httpx
 
+
 def kalshi_fetch() -> list[Market]:
     rows = httpx.get("https://api.elections.kalshi.com/trade-api/v2/markets").json()["markets"]
     return [
         Market(
-            venue="kalshi", ticker=r["ticker"], question=r["title"],
-            yes_bid=r["yes_bid"], yes_ask=r["yes_ask"],
-            no_bid=r["no_bid"], no_ask=r["no_ask"], volume=r["volume"],
+            venue="kalshi",
+            ticker=r["ticker"],
+            question=r["title"],
+            yes_bid=r["yes_bid"],
+            yes_ask=r["yes_ask"],
+            no_bid=r["no_bid"],
+            no_ask=r["no_ask"],
+            volume=r["volume"],
         )
         for r in rows
     ]
 
-feed = LiveFeed(kalshi_fetch)            # add a fair_value_fn for mispricing signals
+
+feed = LiveFeed(kalshi_fetch)  # add a fair_value_fn for mispricing signals
 ranked = Scanner(feed, bankroll=5000).scan()
 ```
 
